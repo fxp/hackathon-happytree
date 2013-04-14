@@ -86,10 +86,13 @@
                                 $("#goodflower").show()
                                 $("#badflower").hide()
                                 $("#health").html("好舒服")
+                                $("#healthRate").removeClass('bar-danger')
                             } else {
                                 $("#goodflower").hide()
                                 $("#badflower").show()
                                 $("#health").html("身体欠佳")
+                                $("#healthRate").css("width", result['health'] + "%")
+                                $("#healthRate").addClass('bar-danger')
                             }
                             if (locked) {
                                 if (health > 50) {
