@@ -1,0 +1,123 @@
+#{extends 'main.html' /}
+<div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    <li>
+                        <a class="brand" style="margin-left: 20px"
+                           href="@{Application.index("map")}"><strong>HappyTree</strong></a>
+                    </li>
+                </ul>
+            </div>
+            <!--/.nav-collapse -->
+        </div>
+    </div>
+</div>
+
+<div style="margin-top: 70px">
+    <div id="img" style="text-align: center;margin:10px">
+        <img id="goodflower" style="display:none;height:200px" src="/public/images/goodflower.png"/>
+        <img id="badflower" style="display:none;height:200px" src="/public/images/badflower.png"/>
+    </div>
+    <div class="desc" style="text-align:center;margin:10px">
+        <h3><strong>${plant.desc}</strong></h3>
+    </div>
+
+    <div class="row-fluid">
+        <div class="span8 offset2">
+            空气湿度: <h4 id="humidity">${plant.humidity}%</h4>
+        </div>
+    </div>
+
+    <div class="row-fluid">
+        <div class="span8 offset2">
+            空气温度: <h4 id="temperature">${plant.temperature}</h4>
+        </div>
+    </div>
+
+    <div class="row-fluid">
+        <div class="span8 offset2">
+            <h4 id="health"></h4>
+        </div>
+    </div>
+
+    <div class="row-fluid">
+        <div class="offset2 span6">
+            <div class="progress" style="width:100%">
+                <div class="bar" id="healthRate" style="width: ${plant.health}%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row-fluid" id="op" style="text-align: center">
+        <a id="lock" href="@{PlantController.lock(plant.id)}" style="display: none">
+            <img src="/public/images/towater.png" style="height:100px"/>
+        </a>
+
+        <div id="healthy" class="disabled btn btn-block btn-large" style="display: none">
+            我很健康～
+        </div>
+        <div id="working" class="" style="display: none">
+            <img src="/public/images/watering.png" style="height:100px"/>
+        </div>
+        <a href="@{PlantController.unlock(plant.id)}">
+            <div id="back" class="" style="display: none">
+                <img src="/public/images/watered.png" style="height:100px"/>
+            </div>
+        </a>
+    </div>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            refresh = function () {
+                $.getJSON(
+                        "/plant/get?",
+                        {id: "${plant.id}" },
+                        function (result) {
+                            var locked = result['locked']
+                            var health = parseFloat(result['health'])
+                            $("#humidity").html(result['humidity'] + "%")
+                            $("#temperature").html(result['temperature'] + " ℃")
+                            $("#healthRate").css("width", result['health'] + "%")
+                            console.log('humidity:' + result['humidity'])
+                            console.log('temperature:' + result['temperature'])
+                            console.log('health:' + result['health'])
+                            if (health > 50) {
+                                $("#goodflower").show()
+                                $("#badflower").hide()
+                                $("#health").html("好舒服")
+                            } else {
+                                $("#goodflower").hide()
+                                $("#badflower").show()
+                                $("#health").html("身体欠佳")
+                            }
+                            if (locked) {
+                                if (health > 50) {
+                                    console.log('healthy now')
+                                    $("#lock").hide()
+                                    $("#working").hide()
+                                    $("#back").show()
+                                } else {
+                                    console.log('unhealthy now')
+                                    $("#lock").hide()
+                                    $("#working").show()
+                                    $("#back").hide()
+                                }
+                            } else {
+                                console.log('unlocked')
+                                $("#lock").show()
+                                $("#working").hide()
+                                $("#back").hide()
+                                $("#healthy").hide()
+                            }
+                        }
+                )
+            }
+            setInterval(function () {
+                refresh()
+            }, 1000);
+            refresh()
+        })
+    </script>
+
+</div>

@@ -1,0 +1,140 @@
+#{extends 'main.html' /}
+#{set title:'Home' /}
+<script type="text/javascript"
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyApKCTEfKBd77pz0IJZErlHCLRlSZY_fII&sensor=true">
+</script>
+
+<div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    <li>
+                        <a class="brand" style="margin-left: 20px" href="#"><strong>HappyTree</strong></a>
+                    </li>
+                    <li class='#{if "map".equals(layout)}active#{/if}'><a href="@{Application.index('map')}">Map</a>
+                    </li>
+                    <li class='#{if "list".equals(layout)}active#{/if}'><a href="@{Application.index('list')}">List</a>
+                    </li>
+                </ul>
+                <ul class="nav pull-right">
+                    <li class=""><a href="#">早晨 flamingo</a></li>
+                </ul>
+            </div>
+            <!--/.nav-collapse -->
+        </div>
+    </div>
+</div>
+
+<div id="data" style="display: none">
+#{list items:plants,as:"plant"}
+    <div class="plant"
+         pid='${plant.getId()}'
+         image='${plant.img}'
+         lat='${plant.lat}'
+         lng='${plant.lng}'
+         desc='${plant.desc}'
+         health='${plant.health}'
+            >
+    </div>
+#{/list}
+</div>
+
+<style type="text/css">
+    html {
+        height: 100%
+    }
+
+    body {
+        height: 100%;
+        margin: 0;
+        padding: 0
+    }
+
+    #map-canvas {
+        height: 100%
+    }
+</style>
+<script type="text/javascript"
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyApKCTEfKBd77pz0IJZErlHCLRlSZY_fII&sensor=true">
+</script>
+<script type="text/javascript">
+    function initialize() {
+        var mapOptions = {
+            center: new google.maps.LatLng(39.999835, 116.336063),
+            zoom: 16,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        };
+        var map = new google.maps.Map(document.getElementById("map-canvas"),
+                mapOptions);
+        var plantElements = document.getElementsByClassName('plant')
+        var plants = new Array()
+        for (var i = 0; i < plantElements.length; i++) {
+            var plant = plantElements[i]
+            plants[i] = {
+                img: plant.getAttribute('image'),
+                id: plant.getAttribute('pid'),
+                lat: plant.getAttribute('lat'),
+                lng: plant.getAttribute('lng'),
+                desc: plant.getAttribute('desc'),
+                deadCount: plant.getAttribute('health')
+            }
+            console.log('plant,' + JSON.stringify(plants[i]))
+        }
+        for (var i = 0; i < plants.length; i++) {
+            var plant = plants[i]
+            console.log("p:" + plant.id)
+            var infowindow = new google.maps.InfoWindow({
+                content: plant.desc,
+                maxWidth: 200
+            })
+            var image = '/public/images/marker.png';
+            var myMarker = new google.maps.Marker({
+                position: new google.maps.LatLng(plant.lat, plant.lng),
+                icon: image
+            })
+
+            google.maps.event.addListener(myMarker, 'click', (function (event, index) {
+                return function () {
+                    infowindow.content = "<div style='text-align: center'>" +
+                            "<div><img style='height:100px' src='/public/flower/" + plants[index].img + "'/></div><h4>" + plants[index].desc
+                            + "</h4></div><div style='margin-top:20px;text-align: center'>" +
+                            "<a href='/plant/show?id=" + plants[index].id + "'>" +
+                            "<div class='btn btn-large''>查看任务</div>" +
+                            "</a>" +
+                            "</div>";
+                    infowindow.open(map, this);
+                }
+            })(myMarker, i))
+
+            myMarker.setMap(map);
+        }
+
+
+    }
+    google.maps.event.addDomListener(window, 'load', initialize);
+</script>
+#{if "map".equals(layout) }
+<div id="map-canvas"></div>
+#{/if}
+#{else}
+
+<div id="table" style="margin-top: 50px">
+    <table class="table">
+        <thead>
+        <tr>
+            <th style="text-align: center">健康</th>
+            <th>描述</th>
+        </tr>
+        </thead>
+        <tbody>
+            #{list items:plants,as:"plant"}
+            <tr>
+                <td style="text-align: center">${plant.health}</td>
+                <td><a href="/plant/show?id=${plant.id}">${plant.desc}</a></td>
+            </tr>
+            #{/list}
+        </tbody>
+    </table>
+</div>
+#{/else}
